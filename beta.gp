@@ -40,7 +40,7 @@ init(l,b,{count=default(seriesprecision)}) = {
 	
 	Cut = 0;  /*this is just a quick cut value, to limit how deep the recursion goes, otherwise we get deep recursion*/
 
-	if(abs(real(mult)) < 1E-3, Cut = offset-1E3, Cut = offset-50 - 1/real(mult));
+	if(abs(real(Const(mult))) < 1E-3, Cut = offset-1E3, Cut =offset-50 - 1/Const(real(mult)));
 
 	beta_taylor = x/exp(mult) + O(x^2);  /*Sheldon is to credit for this polynomial translation*/
 	for (n=1,count, 
@@ -63,11 +63,11 @@ init_OFF(l,b,{count=default(seriesprecision)}) = {
 		
 	Cut = 0;  /*this is just a quick cut value, to limit how deep the recursion goes, otherwise we get deep recursion*/
 
-	if(abs(real(mult)) < 1E-3, Cut = offset-1E3, Cut = offset-50 - 1/real(mult));
+	if(abs(real(Const(mult))) < 1E-3, Cut = offset-1E3, Cut = offset-50 - 1/Const(real(mult)));
 	
 	/*This variable offsets the nested exponentials so that the iterate will converge regardless how large b is; or how close it is to zero*/
-	if(abs(b) > 1E6, offset = log(sqrt(abs(b)))^6);
-	if(abs(b) <1E-6, offset = log(sqrt(1/abs(b)))^6);
+	if(abs(Const(b)) > 1E6, offset = log(sqrt(abs(Const(b))))^6);
+	if(abs(Const(b)) <1E-6, offset = log(sqrt(1/abs(Const(b))))^6);
 
 	beta_taylor = x/exp(mult+offset) + O(x^2)/exp(offset);  /*Sheldon is to credit for this polynomial translation*/
 	for (n=1,count, 
@@ -116,7 +116,7 @@ beta(z) = {
 	You may need to increase depth of iteration/series precision/digit precision for more anomalous values.
 	*/
 	
-	if(real(Const(z)) <= Cut, 
+	if(real(Const(z)) <= Const(Cut), 
 		subst(beta_taylor,x,exp(mult*z)),
 		exp(base*beta(z-1))/(1+exp(-mult*(z-1)))
 	);
@@ -147,7 +147,7 @@ beta_off(z) = {
 	*/
 
 	
-	if(real(Const(z)) <= Cut, 
+	if(real(Const(z)) <= Const(Cut), 
 		subst(beta_taylor,x,exp(mult*(z))),
 		exp(base*beta_off(z-1))/(1+exp(-mult*(z-offset-1)))
 	);
@@ -211,13 +211,13 @@ For that run this initialization only if you want to analyse the various rho ter
 init_rho(c,LIMIT={default(seriesprecision)}) = {
 	CENTER = c;
 	local(rho,k,j);
-	rho=vector(LIMIT,i,0 + O(x^LIMIT));
+	rho=vector(LIMIT,i,0 + O(q^LIMIT));
 	global(RHO);
 
-	rho[2] = -log(1+exp(-mult*(x+CENTER)))/base;
+	rho[2] = -log(1+exp(-mult*(q+CENTER)))/base;
 
 	for(k=3,LIMIT, 
-		rho[k] = tau(CENTER+x,k-2)-sum(j=1,k-2,rho[j+1]);
+		rho[k] = tau(CENTER+q,k-2)-sum(j=1,k-2,rho[j+1]);
 		if(rho[k]==0,k=LIMIT+1);
 	);
 	
@@ -226,7 +226,7 @@ init_rho(c,LIMIT={default(seriesprecision)}) = {
 }
 
 rho(z,K) = {
-	subst(Pol(RHO[K+1],x),x,z-CENTER); \\shift the root value because PARI indexes start at 1, and I want it to start at 0.
+	iferr(subst(Pol(RHO[K+1],q),q,z-CENTER),error,0,); \\shift the root value because PARI indexes start at 1, and I want it to start at 0. If we're beyond the index set to zero. 
 }
 
 tau_rho(z,LIMIT={default(seriesprecision)}) = {
