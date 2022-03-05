@@ -35,8 +35,10 @@ rho(z,j)
 
 which is an evaluation of a polynomial centered about CENTER upto the series precision. The variable j indexes up until how many rho terms were made using LIMIT in init_rho. Or, if there's an overflow it sets the protocol to zero; or if j is outside of the index list, sets the protocol to zero. This satisfies:
 
-rho(z,0) = 0;
+rho(z,0) = 0
+
 rho(z,1) = -log(1+exp(-mult * z))/base
+
 sum(j=0,LIMIT-1, rho(z,j)) = tau(z, LIMIT-2)
 
 rho(z,j) = tau(z,j-1) - tau(z,j-2);
